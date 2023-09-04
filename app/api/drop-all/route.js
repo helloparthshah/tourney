@@ -2,6 +2,7 @@ import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
 
 export async function GET(request) {
+    return NextResponse.json({ message: 'Hello from the API!' });
     // drop all tables
     /* try {
         const result =

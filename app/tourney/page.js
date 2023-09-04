@@ -1,9 +1,55 @@
 "use client"
+
 import Sidebar from '@/components/sidebar';
-import { SingleEliminationBracket, Match, MATCH_STATES, SVGViewer } from '@g-loot/react-tournament-brackets';
+// import { SingleEliminationBracket, Match, MATCH_STATES, SVGViewer } from '@g-loot/react-tournament-brackets';
 import { useWindowSize } from '@uidotdev/usehooks';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
+
+if (typeof window !== "undefined" && typeof window.navigator !== "undefined") {
+    import("@g-loot/react-tournament-brackets");
+}
+const SingleEliminationBracket = dynamic(
+    () => {
+        return import("@g-loot/react-tournament-brackets").then(
+            mod => mod.SingleEliminationBracket
+        );
+    },
+    { ssr: false }
+);
+
+const Match = dynamic(
+    () => {
+        return import("@g-loot/react-tournament-brackets").then(mod => mod.Match);
+    },
+    { ssr: false }
+);
+const MATCH_STATES = dynamic(
+    () => {
+        return import("@g-loot/react-tournament-brackets").then(
+            mod => mod.MATCH_STATES
+        );
+    },
+    { ssr: false }
+);
+const SVGViewer = dynamic(
+    () => {
+        return import("@g-loot/react-tournament-brackets").then(
+            mod => mod.SVGViewer
+        );
+    },
+    { ssr: false }
+);
+
+const createTheme = dynamic(
+    () => {
+        return import("@g-loot/react-tournament-brackets").then(
+            mod => mod.createTheme
+        );
+    },
+    { ssr: false }
+);
 
 export default function Brackets() {
     const size = useWindowSize();
@@ -219,7 +265,11 @@ export default function Brackets() {
                         setSelectedCharacter(allCharacters.find((character) => character.id == e.target.value));
                     }}>
                         {allCharacters.map((character) => {
-                            return <option value={character.id}>{character.name}</option>
+                            return (
+                                <option value={character.id} key={character.id}>
+                                    {character.name}
+                                </option>
+                            );
                         })}
                     </Form.Select>
                     <Button variant="primary" onClick={() => {

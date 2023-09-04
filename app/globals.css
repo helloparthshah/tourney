@@ -1,27 +1,75 @@
+/* globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+.sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow-x: hidden;
+    transition: width 0.3s ease-in-out;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+.sidebar.collapsed {
+    width: 80px;
+    overflow: hidden;
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+.topbar path {
+    transition: all 0.2s ease;
+}
+
+.bg-dark-grey {
+    background-color: hsl(210, 11%, 20%)
+}
+
+html[data-bs-theme="dark"] :root {
+    --bs-emphasis-color-rgb: 0, 0, 0;
+}
+
+html[data-bs-theme="dark"] .content {
+    color: #f2f2f2;
+}
+
+html[data-bs-theme="dark"] .content h1 {
+    color: #f2f2f2 !important;
+}
+
+html[data-bs-theme="dark"] .btn-outline-secondary {
+    --bs-btn-color: #f2f2f2;
+}
+
+html[data-bs-theme="dark"] .bi-trophy-fill {
+    fill: #f2f2f2;
+}
+
+html[data-bs-theme="dark"] .search-form input:focus+#search-icon {
+    background-color: hsl(210, 11%, 20%)
+}
+
+html[data-bs-theme="dark"] #search-icon:hover {
+    background-color: hsl(210, 11%, 20%)
+}
+
+html[data-bs-theme="dark"] .scrollToTopBtn {
+    background-color: #f2f2f2
+}
+
+html[data-bs-theme="dark"] .scrollToTopBtn:hover {
+    background-color: #787878
+}
+
+html[data-bs-theme="dark"] .scrollToTopBtn svg {
+    stroke: rgb(33, 33, 33);
+}
+
+html[data-bs-theme="dark"] .copy-button {
+    fill: #acb5bd;
+    transition: fill 200ms ease-in-out;
+}
+
+html[data-bs-theme="dark"] .copy-button:hover {
+    fill: #f2f2f2;
 }

@@ -55,7 +55,7 @@ export default function Brackets() {
     const size = useWindowSize();
     const finalWidth = Math.max(size.width - 200, 500);
     const finalHeight = Math.max(size.height - 100, 500);
-    const [username, setUsername] = useState("harshil");
+    const [username, setUsername] = useState(process.env.TEST_USER);
     const [allCharacters, setAllCharacters] = useState([]);
     const [selectedCharacter, setSelectedCharacter] = useState(null);
     const [characters, setCharacters] = useState([]);

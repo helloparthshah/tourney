@@ -9,7 +9,7 @@ export default function Home() {
       <h1>Generative Language</h1>
       <p>Generative Language is a web app that uses GPT-3 to generate characters for your tabletop RPGs.</p>
       <p>It is currently in development.</p>
-      <Characters username="harshil" />
+      <Characters username={process.env.TEST_USER} />
     </Container>
   )
 }

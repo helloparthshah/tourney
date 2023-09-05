@@ -84,54 +84,34 @@ export default function Brackets() {
         }
         let totalRounds = Math.ceil(Math.log2(nMatches));
         let cRound = totalRounds;
-        console.log("nMatches: " + nMatches);
-        console.log("cRound: " + cRound);
         while (cRound > 1) {
             let nMatchesInRound = Math.pow(2, totalRounds - cRound + 1);
             let round = [];
             for (let i = 0; i < nMatchesInRound; i += 2) {
                 id++;
-                if (i + 1 < nMatchesInRound) {
-                    round.push({
-                        id: id,
-                        name: "Round " + (cRound) + " - Match " + (Math.floor(i / 2) + 1),
-                        nextMatchId: totalRounds == cRound ? null : Math.floor(id / 2),
-                        tournamentRoundText: (cRound).toString(),
-                        state: null,
-                        participants: [
-                            {
-                                id: 0,
-                                resultText: null,
-                                isWinner: false,
-                                status: null,
-                                name: "TBA",
-                            },
-                            {
-                                id: 0,
-                                resultText: null,
-                                isWinner: false,
-                                status: null,
-                                name: "TBA",
-                            }
-                        ],
-                    });
-                } else {
-                    round.push({
-                        id: id,
-                        name: "Round " + (cRound) + " - Match " + (Math.floor(i / 2) + 1),
-                        nextMatchId: totalRounds == cRound ? null : Math.floor(id / 2),
-                        tournamentRoundText: (cRound).toString(),
-                        state: MATCH_STATES.WALK_OVER,
-                        participants: [
-                            {
-                                id: cRound == 1 ? characters[i].id : 0,
-                                resultText: null,
-                                isWinner: false,
-                                name: "TBA",
-                            },
-                        ],
-                    });
-                }
+                round.push({
+                    id: id,
+                    name: "Round " + (cRound) + " - Match " + (Math.floor(i / 2) + 1),
+                    nextMatchId: totalRounds == cRound ? null : Math.floor(id / 2),
+                    tournamentRoundText: (cRound).toString(),
+                    state: null,
+                    participants: [
+                        {
+                            id: null,
+                            resultText: null,
+                            isWinner: false,
+                            status: null,
+                            name: null,
+                        },
+                        {
+                            id: null,
+                            resultText: null,
+                            isWinner: false,
+                            status: null,
+                            name: null,
+                        }
+                    ],
+                });
             }
             newMatches = [...round, ...newMatches];
             cRound--;
@@ -166,8 +146,6 @@ export default function Brackets() {
                     ],
                 });
             } else {
-                console.log("i: " + i);
-                console.log("characters[i]: " + characters[i]);
                 newMatches.push({
                     id: id,
                     name: "Round 1 - Match " + (Math.floor(i / 2) + 1),
@@ -186,7 +164,6 @@ export default function Brackets() {
                 });
             }
         }
-        console.log(newMatches);
         setMatches(newMatches);
     }, [characters]);
 
@@ -204,7 +181,6 @@ export default function Brackets() {
         })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 let winner = data.winner;
                 let winnerCharacter = characters.find((character) => character.name.toLowerCase().includes(winner.toLowerCase()));
                 let description = data.description;
@@ -233,19 +209,12 @@ export default function Brackets() {
                 // set next match
                 if (newMatch.nextMatchId != null) {
                     let nextMatch = newMatches.find((m) => m.id == newMatch.nextMatchId);
-                    console.log(nextMatch);
-                    // set next match participant whatever is empty
-                    for (let i = 0; i < nextMatch.participants.length; i++) {
-                        if (nextMatch.participants[i].id == 0) {
-                            nextMatch.participants[i].id = winnerCharacter.id;
-                            nextMatch.participants[i].name = winnerCharacter.name;
-                            nextMatch.participants[i].description = winnerCharacter.description;
-                            break;
-                        }
-                    }
+                    let participantIndex = newMatch.id % 2;
+                    nextMatch.participants[participantIndex].id = winnerCharacter.id;
+                    nextMatch.participants[participantIndex].name = winnerCharacter.name;
+                    nextMatch.participants[participantIndex].description = winnerCharacter.description;
                     newMatches.find((m) => m.id == newMatch.nextMatchId).participants = nextMatch.participants;
                 }
-                console.log(newMatches);
                 setMatches(newMatches);
             });
     }
@@ -277,7 +246,6 @@ export default function Brackets() {
                                         <Button variant="primary"
                                             style={{ zIndex: 2, position: "absolute", top: 0, right: 100 }}
                                             onClick={() => {
-                                                console.log(match);
                                                 if (match.state && match.state == MATCH_STATES.DONE) return;
                                                 playMatch(match);
                                             }}>

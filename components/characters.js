@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, Collapse } from "react-bootstrap";
+import EditCharacter from "../components/editcharacter";
 
 export default function Characters({ username }) {
   const [characters, setCharacters] = useState([]);
@@ -9,7 +10,7 @@ export default function Characters({ username }) {
 
   function CharacterCard({ character }) {
     return (
-      <Col md={4} className="mb-3">
+      <Col md={4} className="mb-3 d-flex flex-column justify-content-between align-items-center">
         <Card className="w-100 playing-card">
           <Card.Title style={{ paddingLeft: "2rem", paddingTop: "0.7rem", color: "white", fontSize: "1.5rem" }}>
             {character.name}
@@ -41,6 +42,7 @@ export default function Characters({ username }) {
             </Row>
           </Card.Body>
         </Card>
+        <EditCharacter character={character} />
       </Col>
     );
   }
@@ -62,6 +64,15 @@ export default function Characters({ username }) {
         {characters.map((character, index) => (
           <CharacterCard character={character} key={character.name} />
         ))}
+        <Col md={4} className="mb-3 d-flex flex-column justify-content-between align-items-center">
+          <Card className="w-100 playing-card">
+          </Card>
+          <EditCharacter character={{
+            username: username,
+          }}
+            add
+          />
+        </Col>
       </Row>
     </Container>
   );

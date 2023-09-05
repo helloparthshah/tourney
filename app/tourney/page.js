@@ -53,7 +53,7 @@ const createTheme = dynamic(
 
 export default function Brackets() {
     const size = useWindowSize();
-    const finalWidth = Math.max(size.width - 50, 500);
+    const finalWidth = Math.max(size.width - 200, 500);
     const finalHeight = Math.max(size.height - 100, 500);
     const [username, setUsername] = useState("harshil");
     const [allCharacters, setAllCharacters] = useState([]);
@@ -151,7 +151,7 @@ export default function Brackets() {
                     name: "Round 1 - Match " + (Math.floor(i / 2) + 1),
                     nextMatchId: Math.floor(id / 2),
                     tournamentRoundText: '1',
-                    state: MATCH_STATES.WALK_OVER,
+                    state: "WALK_OVER",
                     participants: [
                         {
                             id: characters[i].id,
@@ -168,55 +168,69 @@ export default function Brackets() {
     }, [characters]);
 
     async function playMatch(match) {
-        await fetch('/api/battle', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: username,
-                p1: match.participants[0].name,
-                p2: match.participants[1].name,
-            }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                let winner = data.winner;
-                let winnerCharacter = characters.find((character) => character.name.toLowerCase().includes(winner.toLowerCase()));
-                let description = data.description;
-                let newMatches = [...matches];
-                let newMatch = newMatches.find((m) => m.id == match.id);
-                // make winner name resultText and isWinner true
-                newMatch.participants.forEach((participant) => {
-                    if (participant.name == winnerCharacter.name) {
-                        participant.resultText = "Win";
-                        participant.isWinner = true;
-                    }
+        let data = {};
+        if (match.state && match.state == "WALK_OVER") {
+            data = {
+                winner: match.participants[0].name,
+                description: "Walkover",
+            };
+        } else {
+            data = await fetch('/api/battle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    p1: match.participants[0].name,
+                    p2: match.participants[1].name,
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    return data;
+                }).catch((error) => {
+                    console.error('Error:', error);
                 });
-                // make loser name resultText and isWinner false
-                newMatch.participants.forEach((participant) => {
-                    if (participant.name != winnerCharacter.name) {
-                        participant.resultText = "Loss";
-                        participant.isWinner = false;
-                    }
-                });
-                // set match state to done
-                newMatch.state = MATCH_STATES.DONE;
-                // set match description
-                newMatch.description = description;
-                // set match
-                newMatches.find((m) => m.id == newMatch.id).participants = newMatch.participants;
-                // set next match
-                if (newMatch.nextMatchId != null) {
-                    let nextMatch = newMatches.find((m) => m.id == newMatch.nextMatchId);
-                    let participantIndex = newMatch.id % 2;
-                    nextMatch.participants[participantIndex].id = winnerCharacter.id;
-                    nextMatch.participants[participantIndex].name = winnerCharacter.name;
-                    nextMatch.participants[participantIndex].description = winnerCharacter.description;
-                    newMatches.find((m) => m.id == newMatch.nextMatchId).participants = nextMatch.participants;
-                }
-                setMatches(newMatches);
-            });
+        }
+        let winner = data.winner;
+        let winnerCharacter = characters.find((character) => character.name.toLowerCase().includes(winner.toLowerCase()));
+        let description = data.description;
+        let newMatches = [...matches];
+        let newMatch = newMatches.find((m) => m.id == match.id);
+        // make winner name resultText and isWinner true
+        newMatch.participants.forEach((participant) => {
+            if (participant.name == winnerCharacter.name) {
+                participant.resultText = "Win";
+                participant.isWinner = true;
+            }
+        });
+        // make loser name resultText and isWinner false
+        newMatch.participants.forEach((participant) => {
+            if (participant.name != winnerCharacter.name) {
+                participant.resultText = "Loss";
+                participant.isWinner = false;
+            }
+        });
+        // set match state to done
+        newMatch.state = "DONE";
+        // set match description
+        newMatch.description = description;
+        // set match
+        // newMatches.find((m) => m.id == newMatch.id).participants = newMatch.participants;
+        // newMatches.find((m) => m.id == newMatch.id).state = newMatch.state;
+        // newMatches.find((m) => m.id == newMatch.id).description = newMatch.description;
+        console.log(newMatch);
+        // set next match
+        if (newMatch.nextMatchId != null) {
+            let nextMatch = newMatches.find((m) => m.id == newMatch.nextMatchId);
+            let participantIndex = newMatch.id % 2;
+            nextMatch.participants[participantIndex].id = winnerCharacter.id;
+            nextMatch.participants[participantIndex].name = winnerCharacter.name;
+            nextMatch.participants[participantIndex].description = winnerCharacter.description;
+            newMatches.find((m) => m.id == newMatch.nextMatchId).participants = nextMatch.participants;
+        }
+        setMatches(newMatches);
     }
 
     const [selectedMatch, setSelectedMatch] = useState(null);
@@ -246,10 +260,9 @@ export default function Brackets() {
                                         <Button variant="primary"
                                             style={{ zIndex: 2, position: "absolute", top: 0, right: 100 }}
                                             onClick={() => {
-                                                if (match.state && match.state == MATCH_STATES.DONE) return;
                                                 playMatch(match);
                                             }}>
-                                            {(match.state && match.state == MATCH_STATES.DONE) ? "Replay Match" : "Play Match"}
+                                            {(match.state && match.state == "DONE") ? "Replay Match" : "Play Match"}
                                         </Button>
                                     </div>
                                 );
@@ -278,14 +291,27 @@ export default function Brackets() {
                     </Form.Select>
                     <Button variant="primary" onClick={() => {
                         setCharacters([...characters, selectedCharacter]);
-                    }}>Add Characters</Button>
+                    }}>
+                        Add Characters
+                    </Button>
+                    <Button variant="primary" onClick={() => {
+                        // randomize character order from allCharacters
+
+                        let shuffled = allCharacters
+                            .map(value => ({ value, sort: Math.random() }))
+                            .sort((a, b) => a.sort - b.sort)
+                            .map(({ value }) => value)
+                        setCharacters(shuffled);
+                    }}>
+                        Randomize Characters
+                    </Button>
                 </Container>
                 <Container>
                     <h1 className="mb-3"><b>Selected Match</b></h1>
                     {selectedMatch &&
                         <div>
                             <h3>{selectedMatch.name}</h3>
-                            <h5>{selectedMatch.participants[0].name ?? ""} vs {selectedMatch.participants[1].name ?? ""}</h5>
+                            <h5>{selectedMatch.participants[0].name ?? ""} vs {selectedMatch.participants[1]?.name ?? ""}</h5>
                             <h5>{selectedMatch.description ?? ""}</h5>
                         </div>
                     }

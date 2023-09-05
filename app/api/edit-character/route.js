@@ -4,9 +4,11 @@ import generateStatsPrompt from '../generate-stats-prompt';
 
 export async function POST(request) {
     const { username,
+        id,
         name,
         description,
         image } = await request.json();
+    console.log(username);
 
     const {
         speed,
@@ -18,7 +20,20 @@ export async function POST(request) {
 
     try {
         if (!username || !name || !description) throw new Error('Missing required fields');
-        await sql`INSERT INTO Characters (username, name, description, image, speed, strength, charisma, intelligence, luck, willpower) VALUES (${username}, ${name}, ${description}, ${image}, ${speed}, ${strength}, ${charisma}, ${intelligence}, ${luck}, ${willpower});`;
+        await sql`
+        UPDATE Characters
+        SET
+            name = ${name},
+            description = ${description},
+            image = ${image},
+            speed = ${speed},
+            strength = ${strength},
+            charisma = ${charisma},
+            intelligence = ${intelligence},
+            luck = ${luck},
+            willpower = ${willpower}
+        WHERE id = ${id};
+        `;
     } catch (error) {
         return NextResponse.json({ error }, { status: 500 });
     }

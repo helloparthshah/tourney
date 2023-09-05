@@ -1,10 +1,9 @@
 "use client"
 
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './globals.css'
 import { Inter } from 'next/font/google'
 import Topbar from '@/components/topbar';
 import Footer from '@/components/footer';
+import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 

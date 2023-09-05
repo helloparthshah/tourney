@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server';
 export async function POST(request) {
     const { username,
         name,
-        description } = await request.json();
+        description,
+        image } = await request.json();
 
     const input = "name: " + name + " description: " + description;
     const promptString = `Using the name and description provided, generate 6 attributes from a scale from 0 to 10 for speed, strength, charisma, luck, intelligence, willpower
@@ -78,7 +79,7 @@ output:`;
 
     try {
         if (!username || !name || !description) throw new Error('Missing required fields');
-        await sql`INSERT INTO Characters (username, name, description, speed, strength, charisma, intelligence, luck, willpower) VALUES (${username}, ${name}, ${description}, ${speed}, ${strength}, ${charisma}, ${intelligence}, ${luck}, ${willpower});`;
+        await sql`INSERT INTO Characters (username, name, description, image, speed, strength, charisma, intelligence, luck, willpower) VALUES (${username}, ${name}, ${description}, ${image}, ${speed}, ${strength}, ${charisma}, ${intelligence}, ${luck}, ${willpower});`;
     } catch (error) {
         return NextResponse.json({ error }, { status: 500 });
     }

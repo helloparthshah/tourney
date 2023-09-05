@@ -1,52 +1,68 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { Container } from "react-bootstrap";
-import Card from 'react-bootstrap/Card';
-import ListGroup from 'react-bootstrap/ListGroup';
+import { Container, Row, Col, Card, Button, Collapse } from "react-bootstrap";
 
 export default function Characters({ username }) {
-    const [characters, setCharacters] = useState([]);
+  const [characters, setCharacters] = useState([]);
+  const [open, setOpen] = useState(false);
 
-    useEffect(() => {
-        fetch(`/api/getcharacters?username=${username}`)
-            .then(response => response.json())
-            .then(data => setCharacters(data));
-    }, [username]);
-
+  function CharacterCard({ character }) {
     return (
-        <Container>
-            <h2>Characters</h2>
-            <ul>
-                {characters.map(character => (
-                    <Container key={character.name}>
-                        <Card style={{ width: '18rem' }}>
-                            <Card.Body>
-                                <Card.Title>Name: {character.name}</Card.Title>
-                                <Card.Text>Description: {character.description}</Card.Text>
-                            </Card.Body>
-                            <ListGroup className="list-group-flush">
-                                <ListGroup.Item><b>Speed</b>: {character.speed}</ListGroup.Item>
-                                <ListGroup.Item><b>Strength</b>: {character.strength}</ListGroup.Item>
-                                <ListGroup.Item><b>Charisma</b>: {character.charisma} </ListGroup.Item>
-                                <ListGroup.Item><b>Intelligence</b>: {character.intelligence} </ListGroup.Item>
-                                <ListGroup.Item><b>Luck</b>: {character.luck}</ListGroup.Item>
-                                <ListGroup.Item><b>Willpower</b>: {character.willpower} </ListGroup.Item>
-                            </ListGroup>
-                        </Card>
-                    </Container>
-                    // <li key={character.name}>
-                    //     <h3>name: {character.name}</h3>
-                    //     <p>description: {character.description}</p>
-                    //     <p>Speed: {character.speed}</p>
-                    //     <p>Strength: {character.strength}</p>
-                    //     <p>Charisma: {character.charisma}</p>
-                    //     <p>Intelligence: {character.intelligence}</p>
-                    //     <p>Luck: {character.luck}</p>
-                    //     <p>Willpower: {character.willpower}</p>
-                    // </li>
-                ))}
-            </ul>
-        </Container>
+      <Col md={4} className="mb-3">
+        <Card className="w-100 playing-card">
+          <Card.Title style={{ paddingLeft: "2rem", paddingTop: "0.7rem", color: "white", fontSize: "1.5rem" }}>
+            {character.name}
+          </Card.Title>
+          <Card.Img
+            style={{
+              padding: "1rem",
+              height: "300px",
+              objectFit: "cover",
+              objectPosition: "center"
+            }}
+            variant="top"
+            src={character.image} />
+          <Card.Body style={{ paddingBottom: "50px" }} className="d-flex flex-column justify-content-between">
+            <Card.Text className="h-100 d-flex flex-column justify-content-center text-center">
+              {character.description}
+            </Card.Text>
+            <Row className="mt-3">
+              <Col className="text-center">
+                <div><b>Speed</b>: {character.speed} </div>
+                <div><b>Strength</b>: {character.strength}</div>
+                <div><b>Charisma</b>: {character.charisma}</div>
+              </Col>
+              <Col className="text-center">
+                <div><b>Intelligence</b>: {character.intelligence}</div>
+                <div><b>Luck</b>: {character.luck}</div>
+                <div><b>Willpower</b>: {character.willpower}</div>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
+      </Col>
     );
+  }
+
+  const toggleCollapse = () => {
+    setOpen(!open);
+  };
+
+  useEffect(() => {
+    fetch(`/api/getcharacters?username=${username}`)
+      .then(response => response.json())
+      .then(data => setCharacters(data));
+  }, [username]);
+
+  return (
+    <Container>
+      <h1 className="mb-3"><b>Your Characters</b></h1>
+      <Row>
+        {characters.map((character, index) => (
+          <CharacterCard character={character} key={character.name} />
+        ))}
+      </Row>
+    </Container>
+  );
 }

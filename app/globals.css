@@ -1,8 +1,6 @@
 /* globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* import 'bootstrap/dist/css/bootstrap.min.css' */
+@import 'bootstrap/dist/css/bootstrap.min.css';
 .sidebar {
     position: fixed;
     height: 100%;
@@ -25,8 +23,34 @@
     background-color: hsl(210, 11%, 20%)
 }
 
+.playing-card {
+    background: url('https://www.pngkit.com/png/full/326-3269374_best-photos-of-game-card-template-board-game.png');
+    background-size:100% 100%;
+    background-repeat: no-repeat;
+    background-position: top;
+    width: 100%;
+    height: 650px;
+    border-radius: 40px;
+}
+
+.skill {
+    display: flex;
+    flex-direction: row;
+    gap: 2px;
+    justify-content: center;
+    align-items: center;
+}
+
+svg {
+    fill: #212529;
+}
+
 html[data-bs-theme="dark"] :root {
     --bs-emphasis-color-rgb: 0, 0, 0;
+}
+
+html[data-bs-theme="dark"] svg {
+    fill: #f2f2f2 !important;
 }
 
 html[data-bs-theme="dark"] .content {

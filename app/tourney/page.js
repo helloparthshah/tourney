@@ -5,7 +5,7 @@ import Sidebar from '@/components/sidebar';
 import { useWindowSize } from '@uidotdev/usehooks';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import { Button, Container, Form } from 'react-bootstrap';
+import { Button, Container, Form, OverlayTrigger, Popover } from 'react-bootstrap';
 
 if (typeof window !== "undefined" && typeof window.navigator !== "undefined") {
     import("@g-loot/react-tournament-brackets");
@@ -55,7 +55,7 @@ export default function Brackets() {
     const size = useWindowSize();
     const finalWidth = Math.max(size.width - 50, 500);
     const finalHeight = Math.max(size.height - 100, 500);
-    const [username, setUsername] = useState("harhsil");
+    const [username, setUsername] = useState("harshil");
     const [allCharacters, setAllCharacters] = useState([]);
     const [selectedCharacter, setSelectedCharacter] = useState(null);
     const [characters, setCharacters] = useState([]);
@@ -97,7 +97,7 @@ export default function Brackets() {
                         name: "Round " + (cRound) + " - Match " + (Math.floor(i / 2) + 1),
                         nextMatchId: totalRounds == cRound ? null : Math.floor(id / 2),
                         tournamentRoundText: (cRound).toString(),
-                        state: MATCH_STATES.SCORE_DONE,
+                        state: null,
                         participants: [
                             {
                                 id: 0,
@@ -145,7 +145,7 @@ export default function Brackets() {
                     name: "Round 1 - Match " + (Math.floor(i / 2) + 1),
                     nextMatchId: totalRounds == cRound ? null : Math.floor(id / 2),
                     tournamentRoundText: '1',
-                    state: MATCH_STATES.SCORE_DONE,
+                    state: null,
                     participants: [
                         {
                             id: characters[i].id,
@@ -153,6 +153,7 @@ export default function Brackets() {
                             isWinner: false,
                             status: null,
                             name: characters[i].name,
+                            description: characters[i].description,
                         },
                         {
                             id: characters[i + 1].id,
@@ -160,6 +161,7 @@ export default function Brackets() {
                             isWinner: false,
                             status: null,
                             name: characters[i + 1].name,
+                            description: characters[i + 1].description,
                         }
                     ],
                 });
@@ -178,6 +180,7 @@ export default function Brackets() {
                             resultText: null,
                             isWinner: false,
                             name: characters[i].name,
+                            description: characters[i].description,
                         },
                     ],
                 });
@@ -186,6 +189,69 @@ export default function Brackets() {
         console.log(newMatches);
         setMatches(newMatches);
     }, [characters]);
+
+    async function playMatch(match) {
+        await fetch('/api/battle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                p1: match.participants[0].name,
+                p2: match.participants[1].name,
+            }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                let winner = data.winner;
+                let winnerCharacter = characters.find((character) => character.name.toLowerCase().includes(winner.toLowerCase()));
+                let description = data.description;
+                let newMatches = [...matches];
+                let newMatch = newMatches.find((m) => m.id == match.id);
+                // make winner name resultText and isWinner true
+                newMatch.participants.forEach((participant) => {
+                    if (participant.name == winnerCharacter.name) {
+                        participant.resultText = "Win";
+                        participant.isWinner = true;
+                    }
+                });
+                // make loser name resultText and isWinner false
+                newMatch.participants.forEach((participant) => {
+                    if (participant.name != winnerCharacter.name) {
+                        participant.resultText = "Loss";
+                        participant.isWinner = false;
+                    }
+                });
+                // set match state to done
+                newMatch.state = MATCH_STATES.DONE;
+                // set match description
+                newMatch.description = description;
+                // set match
+                newMatches.find((m) => m.id == newMatch.id).participants = newMatch.participants;
+                // set next match
+                if (newMatch.nextMatchId != null) {
+                    let nextMatch = newMatches.find((m) => m.id == newMatch.nextMatchId);
+                    console.log(nextMatch);
+                    // set next match participant whatever is empty
+                    for (let i = 0; i < nextMatch.participants.length; i++) {
+                        if (nextMatch.participants[i].id == 0) {
+                            nextMatch.participants[i].id = winnerCharacter.id;
+                            nextMatch.participants[i].name = winnerCharacter.name;
+                            nextMatch.participants[i].description = winnerCharacter.description;
+                            break;
+                        }
+                    }
+                    newMatches.find((m) => m.id == newMatch.nextMatchId).participants = nextMatch.participants;
+                }
+                console.log(newMatches);
+                setMatches(newMatches);
+            });
+    }
+
+    const [selectedMatch, setSelectedMatch] = useState(null);
+
     return (
         <>
             {/* <Sidebar /> */}
@@ -193,71 +259,41 @@ export default function Brackets() {
                 {matches.length > 0 &&
                     <SingleEliminationBracket
                         matches={matches}
-                        onMatchClick={(match) => {
-                            console.log(match.match);
-                            fetch('/api/battle', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    username: username,
-                                    p1: match.match.participants[0].name,
-                                    p2: match.match.participants[1].name,
-                                }),
-                            })
-                                .then(response => response.json())
-                                .then(data => {
-                                    console.log(data);
-                                    let winner = data.winner;
-                                    let winnerCharacter = characters.find((character) => character.name.includes(winner));
-                                    let description = data.description;
-                                    let newMatches = [...matches];
-                                    let newMatch = newMatches.find((m) => m.id == match.match.id);
-                                    // make winner name resultText and isWinner true
-                                    newMatch.participants.forEach((participant) => {
-                                        if (participant.name == winnerCharacter.name) {
-                                            participant.resultText = "Win";
-                                            participant.isWinner = true;
-                                        }
-                                    });
-                                    // make loser name resultText and isWinner false
-                                    newMatch.participants.forEach((participant) => {
-                                        if (participant.name != winnerCharacter.name) {
-                                            participant.resultText = "Loss";
-                                            participant.isWinner = false;
-                                        }
-                                    });
-                                    // set match state to done
-                                    newMatch.state = MATCH_STATES.SCORE_DONE;
-                                    // set match description
-                                    newMatch.description = description;
-                                    // set match
-                                    newMatches.find((m) => m.id == newMatch.id).participants = newMatch.participants;
-                                    // set next match
-                                    if (newMatch.nextMatchId != null) {
-                                        let nextMatch = newMatches.find((m) => m.id == newMatch.nextMatchId);
-                                        console.log(nextMatch);
-                                        // set next match participant whatever is empty
-                                        for (let i = 0; i < nextMatch.participants.length; i++) {
-                                            if (nextMatch.participants[i].id == 0) {
-                                                nextMatch.participants[i].id = winnerCharacter.id;
-                                                nextMatch.participants[i].name = winnerCharacter.name;
-                                                break;
-                                            }
-                                        }
-                                        newMatches.find((m) => m.id == newMatch.nextMatchId).participants = nextMatch.participants;
-                                    }
-                                    console.log(newMatches);
-                                    setMatches(newMatches);
-                                });
+                        matchComponent={
+                            ({ match, ...props }) => {
+                                return (
+                                    <div style={{ position: "relative", overflow: "visible" }}>
+                                        <Match
+                                            match={match}
+                                            {...props}
+                                            onMatchClick={async (match) => {
+                                                console.log(match.match);
+                                                setSelectedMatch(match.match);
+                                            }}
+                                            onPartyClick={(party) => {
+                                                console.log(party);
+                                            }}
+                                        />
+                                        <Button variant="primary"
+                                            style={{ zIndex: 2, position: "absolute", top: 0, right: 100 }}
+                                            onClick={() => {
+                                                console.log(match);
+                                                if (match.state && match.state == MATCH_STATES.DONE) return;
+                                                playMatch(match);
+                                            }}>
+                                            {(match.state && match.state == MATCH_STATES.DONE) ? "Replay Match" : "Play Match"}
+                                        </Button>
+                                    </div>
+                                );
+                            }
+                        }
+                        svgWrapper={({ children, ...props }) => {
+                            return (
+                                <SVGViewer width={finalWidth} height={finalHeight} {...props}>
+                                    {children}
+                                </SVGViewer>
+                            );
                         }}
-                        matchComponent={Match}
-                        svgWrapper={({ children, ...props }) => (
-                            <SVGViewer width={finalWidth} height={finalHeight} {...props}>
-                                {children}
-                            </SVGViewer>
-                        )}
                     />
                 }
                 <Container>
@@ -275,6 +311,16 @@ export default function Brackets() {
                     <Button variant="primary" onClick={() => {
                         setCharacters([...characters, selectedCharacter]);
                     }}>Add Characters</Button>
+                </Container>
+                <Container>
+                    <h1 className="mb-3"><b>Selected Match</b></h1>
+                    {selectedMatch &&
+                        <div>
+                            <h3>{selectedMatch.name}</h3>
+                            <h5>{selectedMatch.participants[0].name ?? ""} vs {selectedMatch.participants[1].name ?? ""}</h5>
+                            <h5>{selectedMatch.description ?? ""}</h5>
+                        </div>
+                    }
                 </Container>
             </Container>
         </>

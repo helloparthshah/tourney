@@ -180,7 +180,7 @@ output:`;
     if (result.error) {
         return NextResponse.json({ error: result.error.message }, { status: 500 });
     }
-    const winner = result.candidates[0].output.split("\n")[0].replace("winner: ", "").trim();
+    const winner = result.candidates[0].output.split("\n")[0].replace("winner: ", "").trim().replace(/'/g, "");
     // desription is output from line 2 onwards
     let description = result.candidates[0].output.split("\n")
     description.shift();

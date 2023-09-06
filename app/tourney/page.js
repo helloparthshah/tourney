@@ -5,7 +5,7 @@ import Sidebar from '@/components/sidebar';
 import { useWindowSize } from '@uidotdev/usehooks';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import { Button, Container, Form, OverlayTrigger, Popover } from 'react-bootstrap';
+import { Button, Container, Form, OverlayTrigger, Popover, Spinner } from 'react-bootstrap';
 
 if (typeof window !== "undefined" && typeof window.navigator !== "undefined") {
     import("@g-loot/react-tournament-brackets");
@@ -82,7 +82,7 @@ export default function Brackets() {
         } else {
             nMatches = characters.length;
         }
-        let totalRounds = Math.ceil(Math.log2(nMatches));
+        let totalRounds = nMatches == 1 ? 1 : Math.ceil(Math.log2(nMatches));
         let cRound = totalRounds;
         while (cRound > 1) {
             let nMatchesInRound = Math.pow(2, totalRounds - cRound + 1);
@@ -117,9 +117,15 @@ export default function Brackets() {
             cRound--;
         }
 
-        for (let i = 0; i < characters.length; i += 2) {
+        let nPlayersInRound = Math.pow(2, totalRounds);
+        let nFullMatches = 0;
+        if (characters.length > nPlayersInRound / 2) {
+            nFullMatches = Math.floor(nPlayersInRound / 2 - (nPlayersInRound % characters.length));
+        }
+        let charIndex = 0;
+        for (let i = 0; i < Math.floor(nPlayersInRound / 2); i++) {
             id++;
-            if (i + 1 < characters.length) {
+            if (i < nFullMatches) {
                 newMatches.push({
                     id: id,
                     name: "Round 1 - Match " + (Math.floor(i / 2) + 1),
@@ -128,23 +134,24 @@ export default function Brackets() {
                     state: null,
                     participants: [
                         {
-                            id: characters[i].id,
+                            id: characters[charIndex].id,
                             resultText: null,
                             isWinner: false,
                             status: null,
-                            name: characters[i].name,
-                            description: characters[i].description,
+                            name: characters[charIndex].name,
+                            description: characters[charIndex].description,
                         },
                         {
-                            id: characters[i + 1].id,
+                            id: characters[charIndex + 1].id,
                             resultText: null,
                             isWinner: false,
                             status: null,
-                            name: characters[i + 1].name,
-                            description: characters[i + 1].description,
+                            name: characters[charIndex + 1].name,
+                            description: characters[charIndex + 1].description,
                         }
                     ],
                 });
+                charIndex += 2;
             } else {
                 newMatches.push({
                     id: id,
@@ -154,14 +161,15 @@ export default function Brackets() {
                     state: "WALK_OVER",
                     participants: [
                         {
-                            id: characters[i].id,
+                            id: characters[charIndex].id,
                             resultText: null,
                             isWinner: false,
-                            name: characters[i].name,
-                            description: characters[i].description,
+                            name: characters[charIndex].name,
+                            description: characters[charIndex].description,
                         },
                     ],
                 });
+                charIndex += 1;
             }
         }
         setMatches(newMatches);
@@ -172,9 +180,15 @@ export default function Brackets() {
         if (match.state && match.state == "WALK_OVER") {
             data = {
                 winner: match.participants[0].name,
+                walkover: match.participants[0].id == null,
                 description: "Walkover",
             };
         } else {
+            if (!username) return;
+            if (!match.participants[0].id || !match.participants[1].id) {
+                alert("Please play all matches before playing this match");
+                return;
+            }
             data = await fetch('/api/battle', {
                 method: 'POST',
                 headers: {
@@ -191,13 +205,22 @@ export default function Brackets() {
                     return data;
                 }).catch((error) => {
                     console.error('Error:', error);
+                    return {
+                        "error": error,
+                    }
                 });
         }
-        let winner = data.winner;
-        let winnerCharacter = characters.find((character) => character.name.toLowerCase().includes(winner.toLowerCase()));
-        let description = data.description;
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
         let newMatches = [...matches];
+        let description = data.description;
         let newMatch = newMatches.find((m) => m.id == match.id);
+
+        let winner = data.winner;
+
+        let winnerCharacter = characters.find((character) => character.name.toLowerCase().includes(winner.toLowerCase()));
         // make winner name resultText and isWinner true
         newMatch.participants.forEach((participant) => {
             if (participant.name == winnerCharacter.name) {
@@ -216,11 +239,6 @@ export default function Brackets() {
         newMatch.state = "DONE";
         // set match description
         newMatch.description = description;
-        // set match
-        // newMatches.find((m) => m.id == newMatch.id).participants = newMatch.participants;
-        // newMatches.find((m) => m.id == newMatch.id).state = newMatch.state;
-        // newMatches.find((m) => m.id == newMatch.id).description = newMatch.description;
-        console.log(newMatch);
         // set next match
         if (newMatch.nextMatchId != null) {
             let nextMatch = newMatches.find((m) => m.id == newMatch.nextMatchId);
@@ -245,7 +263,7 @@ export default function Brackets() {
                         matchComponent={
                             ({ match, ...props }) => {
                                 return (
-                                    <div style={{ position: "relative", overflow: "visible" }}>
+                                    <>
                                         <Match
                                             match={match}
                                             {...props}
@@ -257,20 +275,39 @@ export default function Brackets() {
                                                 console.log(party);
                                             }}
                                         />
-                                        <Button variant="primary"
-                                            style={{ zIndex: 2, position: "absolute", top: 0, right: 100 }}
-                                            onClick={() => {
-                                                playMatch(match);
+                                        <Button variant=""
+                                            style={{ zIndex: 2, position: "absolute", top: -10, left: 0 }}
+                                            onClick={async () => {
+                                                setSelectedMatch(match);
+                                                setMatches(matches.map((m) => {
+                                                    if (m.id == match.id) {
+                                                        m.loading = true;
+                                                    }
+                                                    return m;
+                                                }));
+                                                await playMatch(match);
+                                                setMatches(matches.map((m) => {
+                                                    if (m.id == match.id) {
+                                                        m.loading = false;
+                                                    }
+                                                    return m;
+                                                }));
                                             }}>
-                                            {(match.state && match.state == "DONE") ? "Replay Match" : "Play Match"}
+                                            {
+                                                match.loading ? <Spinner animation="border" /> :
+                                                    ((match.state && match.state == "DONE") ? "Replay Match" : "Play Match")
+                                            }
                                         </Button>
-                                    </div>
+                                    </>
                                 );
                             }
                         }
                         svgWrapper={({ children, ...props }) => {
                             return (
-                                <SVGViewer width={finalWidth} height={finalHeight} {...props}>
+                                <SVGViewer width={finalWidth} height={finalHeight} {...props}
+                                    background="transparent"
+                                    SVGBackground="transparent"
+                                >
                                     {children}
                                 </SVGViewer>
                             );

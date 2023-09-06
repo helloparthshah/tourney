@@ -1,6 +1,6 @@
 /* globals.css */
-/* import 'bootstrap/dist/css/bootstrap.min.css' */
 @import 'bootstrap/dist/css/bootstrap.min.css';
+
 .sidebar {
     position: fixed;
     height: 100%;
@@ -25,7 +25,7 @@
 
 .playing-card {
     background: url('https://www.pngkit.com/png/full/326-3269374_best-photos-of-game-card-template-board-game.png');
-    background-size:100% 100%;
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: top;
     width: 100%;

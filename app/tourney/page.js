@@ -131,7 +131,7 @@ export default function Brackets() {
                     name: "Round 1 - Match " + (i + 1),
                     nextMatchId: totalRounds == cRound ? null : Math.floor(id / 2),
                     tournamentRoundText: '1',
-                    state: null,
+                    state: "SCHEDULED",
                     participants: [
                         {
                             id: characters[charIndex].id,
@@ -216,37 +216,41 @@ export default function Brackets() {
         }
         let newMatches = [...matches];
         let description = data.description;
-        let newMatch = newMatches.find((m) => m.id == match.id);
+        // let newMatch = newMatches.find((m) => m.id == match.id);
+        let newMatchId = newMatches.findIndex((m) => m.id == match.id);
 
         let winner = data.winner;
 
         let winnerCharacter = characters.find((character) => character.name.toLowerCase().includes(winner.toLowerCase()));
         // make winner name resultText and isWinner true
-        newMatch.participants.forEach((participant) => {
+        newMatches[newMatchId].participants.forEach((participant) => {
             if (participant.name == winnerCharacter.name) {
                 participant.resultText = "Win";
                 participant.isWinner = true;
             }
         });
         // make loser name resultText and isWinner false
-        newMatch.participants.forEach((participant) => {
+        newMatches[newMatchId].participants.forEach((participant) => {
             if (participant.name != winnerCharacter.name) {
                 participant.resultText = "Loss";
                 participant.isWinner = false;
             }
         });
         // set match state to done
-        newMatch.state = "DONE";
+        newMatches[newMatchId].state = "DONE";
         // set match description
-        newMatch.description = description;
+        newMatches[newMatchId].description = description;
         // set next match
-        if (newMatch.nextMatchId != null) {
-            let nextMatch = newMatches.find((m) => m.id == newMatch.nextMatchId);
-            let participantIndex = newMatch.id % 2;
-            nextMatch.participants[participantIndex].id = winnerCharacter.id;
-            nextMatch.participants[participantIndex].name = winnerCharacter.name;
-            nextMatch.participants[participantIndex].description = winnerCharacter.description;
-            newMatches.find((m) => m.id == newMatch.nextMatchId).participants = nextMatch.participants;
+        if (newMatches[newMatchId].nextMatchId != null) {
+            let nextMatchId = newMatches.findIndex((m) => m.id == newMatches[newMatchId].nextMatchId);
+            let participants = JSON.parse(JSON.stringify(newMatches[nextMatchId].participants));
+            let participantIndex = newMatches[newMatchId].id % 2;
+            participants[participantIndex].id = winnerCharacter.id;
+            participants[participantIndex].name = winnerCharacter.name;
+            participants[participantIndex].description = winnerCharacter.description;
+            console.log(JSON.stringify(participants));
+            newMatches[nextMatchId].state = "SCHEDULED"
+            newMatches[nextMatchId].participants = participants;
         }
         setMatches(newMatches);
     }
@@ -327,6 +331,10 @@ export default function Brackets() {
                         })}
                     </Form.Select>
                     <Button variant="primary" onClick={() => {
+                        if (characters.find((character) => character.id == selectedCharacter.id)) {
+                            alert("Character already added");
+                            return;
+                        }
                         setCharacters([...characters, selectedCharacter]);
                     }}>
                         Add Characters

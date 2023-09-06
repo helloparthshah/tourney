@@ -6,7 +6,7 @@ export async function POST(request) {
 
     try {
         if (!username || !id) throw new Error('Missing required fields');
-        const deleteResult = await sql`DELETE FROM Characters WHERE username = ${username}; and id = ${id}`;
+        const deleteResult = await sql`DELETE FROM Characters WHERE username = ${username} and id = ${id}`;
         if (deleteResult.rowCount === 0) {
             throw new Error('Character not found');
         }

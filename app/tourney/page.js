@@ -128,7 +128,7 @@ export default function Brackets() {
             if (i < nFullMatches) {
                 newMatches.push({
                     id: id,
-                    name: "Round 1 - Match " + (Math.floor(i / 2) + 1),
+                    name: "Round 1 - Match " + (i + 1),
                     nextMatchId: totalRounds == cRound ? null : Math.floor(id / 2),
                     tournamentRoundText: '1',
                     state: null,
@@ -155,7 +155,7 @@ export default function Brackets() {
             } else {
                 newMatches.push({
                     id: id,
-                    name: "Round 1 - Match " + (Math.floor(i / 2) + 1),
+                    name: "Round 1 - Match " + (i + 1),
                     nextMatchId: Math.floor(id / 2),
                     tournamentRoundText: '1',
                     state: "WALK_OVER",

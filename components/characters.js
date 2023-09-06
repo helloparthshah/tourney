@@ -6,7 +6,18 @@ import EditCharacter from "../components/editcharacter";
 
 export default function Characters({ username }) {
   const [characters, setCharacters] = useState([]);
-  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/getcharacters?username=${username}`)
+      .then(response => response.json())
+      .then(data => setCharacters(data));
+  }, [username]);
+
+  function onCharacterUpdate() {
+    fetch(`/api/getcharacters?username=${username}`)
+      .then(response => response.json())
+      .then(data => setCharacters(data));
+  }
 
   function CharacterCard({ character }) {
     return (
@@ -42,20 +53,12 @@ export default function Characters({ username }) {
             </Row>
           </Card.Body>
         </Card>
-        <EditCharacter character={character} />
+        <EditCharacter character={character}
+          onCharacterUpdate={onCharacterUpdate}
+        />
       </Col>
     );
   }
-
-  const toggleCollapse = () => {
-    setOpen(!open);
-  };
-
-  useEffect(() => {
-    fetch(`/api/getcharacters?username=${username}`)
-      .then(response => response.json())
-      .then(data => setCharacters(data));
-  }, [username]);
 
   return (
     <Container>
@@ -71,6 +74,7 @@ export default function Characters({ username }) {
             username: username,
           }}
             add
+            onCharacterUpdate={onCharacterUpdate}
           />
         </Col>
       </Row>

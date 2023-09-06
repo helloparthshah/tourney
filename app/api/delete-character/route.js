@@ -14,6 +14,5 @@ export async function POST(request) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const characters = await sql`SELECT * FROM Characters;`;
-    return NextResponse.json({ characters }, { status: 200 });
+    return NextResponse.json(true, { status: 200 });
 }

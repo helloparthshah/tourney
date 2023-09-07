@@ -112,7 +112,7 @@ export default function Topbar() {
         <Container fluid>
           <Navbar.Brand href="/" as={Link}>
             <h1>
-              TEST
+              #tourney
             </h1>
           </Navbar.Brand>
           <Navbar.Toggle

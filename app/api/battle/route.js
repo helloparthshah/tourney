@@ -146,6 +146,7 @@ output:`;
             return data;
         }).catch((error) => {
             console.error('Error:', error);
+            return { error };
         });
     if (result.error) {
         return NextResponse.json({ error: result.error.message }, { status: 500 });
@@ -158,6 +159,7 @@ output:`;
         description = description.join("\n").replace("description: ", "").trim();
         return NextResponse.json({ winner, description }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ error: "Error parsing output" + result }, { status: 500 });
+        console.log(error);
+        return NextResponse.json({ error: "Error parsing output" + JSON.stringify(result) }, { status: 500 });
     }
 }

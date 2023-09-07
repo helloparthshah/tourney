@@ -191,7 +191,7 @@ export default function Brackets() {
             if (!username) return;
             if (!match.participants[0].id || !match.participants[1].id) {
                 alert("Please play all matches before playing this match");
-                return;
+                return false;
             }
             data = await fetch('/api/battle', {
                 method: 'POST',
@@ -217,7 +217,7 @@ export default function Brackets() {
         }
         if (data.error) {
             alert(data.error);
-            return;
+            return false;
         }
         let newMatches = [...matches];
         let description = data.description;
@@ -267,7 +267,23 @@ export default function Brackets() {
         for (let i = 1; i <= nRounds; i++) {
             let matchesInRound = matches.filter((match) => match.tournamentRoundText == i.toString());
             await Promise.all(matchesInRound.map(async (match) => {
-                await playMatch(match);
+                setSelectedMatch(match);
+                setMatches(matches.map((m) => {
+                    if (m.id == match.id) {
+                        m.loading = true;
+                    }
+                    return m;
+                }));
+                let status = await playMatch(match);
+                setMatches(matches.map((m) => {
+                    if (m.id == match.id) {
+                        m.loading = false;
+                    }
+                    return m;
+                }));
+                if (!status) {
+                    return;
+                }
             }));
             console.log("Round " + i + " done");
         }
@@ -343,7 +359,7 @@ export default function Brackets() {
                     }} */
                     />
                 }
-                <Container>
+                <Container className="mt-3">
                     <Form.Select aria-label="Default select example" onChange={(e) => {
                         setSelectedCharacter(allCharacters.find((character) => character.id == e.target.value));
                     }}>
@@ -355,33 +371,35 @@ export default function Brackets() {
                             );
                         })}
                     </Form.Select>
-                    <Button variant="primary" onClick={() => {
-                        if (characters.find((character) => character.id == selectedCharacter.id)) {
-                            alert("Character already added");
-                            return;
-                        }
-                        setCharacters([...characters, selectedCharacter]);
-                    }}>
-                        Add Characters
-                    </Button>
-                    <Button variant="primary" onClick={() => {
-                        // randomize character order from allCharacters
+                    <div className="mb-3 mt-3 d-flex justify-content-between">
+                        <Button variant="primary" onClick={() => {
+                            if (characters.find((character) => character.id == selectedCharacter.id)) {
+                                alert("Character already added");
+                                return;
+                            }
+                            setCharacters([...characters, selectedCharacter]);
+                        }}>
+                            Add Characters
+                        </Button>
+                        <Button variant="primary" onClick={() => {
+                            // randomize character order from allCharacters
 
-                        let shuffled = allCharacters
-                            .map(value => ({ value, sort: Math.random() }))
-                            .sort((a, b) => a.sort - b.sort)
-                            .map(({ value }) => value)
-                        setCharacters(shuffled);
-                    }}>
-                        Randomize Characters
-                    </Button>
-                    <Button variant="secondary" onClick={() => {
-                        playAllMatches();
-                    }}>
-                        {allMatchesLoading ?
-                            <Spinner animation="border" /> :
-                            "Play All Matches"}
-                    </Button>
+                            let shuffled = allCharacters
+                                .map(value => ({ value, sort: Math.random() }))
+                                .sort((a, b) => a.sort - b.sort)
+                                .map(({ value }) => value)
+                            setCharacters(shuffled);
+                        }}>
+                            Randomize Characters
+                        </Button>
+                        <Button variant="secondary" onClick={() => {
+                            playAllMatches();
+                        }}>
+                            {allMatchesLoading ?
+                                <Spinner animation="border" /> :
+                                "Play All Matches"}
+                        </Button>
+                    </div>
                 </Container>
                 <Container>
                     <h1 className="mb-3"><b>Selected Match</b></h1>

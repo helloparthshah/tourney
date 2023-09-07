@@ -76,7 +76,10 @@ export default function Brackets() {
     }, [username]);
 
     useEffect(() => {
-        if (characters.length < 1) return;
+        if (characters.length < 1) {
+            setMatches([]);
+            return;
+        }
         // remove last character
         let newMatches = [];
         let id = 0;
@@ -184,11 +187,10 @@ export default function Brackets() {
         if (match.state && match.state == "WALK_OVER") {
             data = {
                 winner: match.participants[0].name,
-                walkover: match.participants[0].id == null,
                 description: "Walkover",
             };
         } else {
-            if (!username) return;
+            if (!username) return false;
             if (!match.participants[0].id || !match.participants[1].id) {
                 alert("Please play all matches before playing this match");
                 return false;
@@ -216,7 +218,7 @@ export default function Brackets() {
             console.log(data);
         }
         if (data.error) {
-            alert(data.error);
+            // alert(data.error);
             return false;
         }
         let newMatches = [...matches];
@@ -242,7 +244,9 @@ export default function Brackets() {
             }
         });
         // set match state to done
-        newMatches[newMatchId].state = "DONE";
+        if (newMatches[newMatchId].state != "WALK_OVER") {
+            newMatches[newMatchId].state = "DONE";
+        }
         // set match description
         newMatches[newMatchId].description = description;
         // set next match
@@ -257,6 +261,7 @@ export default function Brackets() {
             newMatches[nextMatchId].participants = participants;
         }
         setMatches(newMatches);
+        return true;
     }
 
     const [allMatchesLoading, setAllMatchesLoading] = useState(false);
@@ -274,16 +279,16 @@ export default function Brackets() {
                     }
                     return m;
                 }));
-                let status = await playMatch(match);
+                let status = false;
+                while (!status) {
+                    status = await playMatch(match);
+                }
                 setMatches(matches.map((m) => {
                     if (m.id == match.id) {
                         m.loading = false;
                     }
                     return m;
                 }));
-                if (!status) {
-                    return;
-                }
             }));
             console.log("Round " + i + " done");
         }
@@ -294,71 +299,59 @@ export default function Brackets() {
 
     return (
         <>
-            {/* <Sidebar /> */}
             <Container>
-                {matches.length > 0 &&
-                    <SingleEliminationBracket
-                        matches={matches}
-                        matchComponent={
-                            ({ match, ...props }) => {
-                                return (
-                                    <>
-                                        <Match
-                                            match={match}
-                                            {...props}
-                                            onMatchClick={async (match) => {
-                                                console.log(match.match);
-                                                setSelectedMatch(match.match);
-                                            }}
-                                            onPartyClick={(party) => {
-                                                console.log(party);
-                                            }}
-                                        />
-                                        <Button variant=""
-                                            style={{ zIndex: 2, position: "absolute", top: -10, left: 0 }}
-                                            onClick={async () => {
-                                                setSelectedMatch(match);
-                                                setMatches(matches.map((m) => {
-                                                    if (m.id == match.id) {
-                                                        m.loading = true;
-                                                    }
-                                                    return m;
-                                                }));
-                                                await playMatch(match);
-                                                setMatches(matches.map((m) => {
-                                                    if (m.id == match.id) {
-                                                        m.loading = false;
-                                                    }
-                                                    return m;
-                                                }));
-                                            }}>
-                                            {
-                                                match.loading ? <Spinner animation="border" /> :
-                                                    ((match.state && match.state == "DONE") ? "Replay Match" : "Play Match")
-                                            }
-                                        </Button>
-                                    </>
-                                );
+                <Container style={{ width: "100%", height: "60vh", overflow: "scroll" }}>
+                    {matches.length > 0 &&
+                        <SingleEliminationBracket
+                            currentRound={1}
+                            matches={matches}
+                            matchComponent={
+                                ({ match, ...props }) => {
+                                    return (
+                                        <>
+                                            <Match
+                                                match={match}
+                                                {...props}
+                                                onMatchClick={async (m) => {
+                                                    m.event.preventDefault();
+                                                    console.log(m.match);
+                                                    setSelectedMatch(m.match);
+                                                }}
+                                                onPartyClick={(party) => {
+                                                    console.log(party);
+                                                }}
+                                            />
+                                            <Button variant=""
+                                                style={{ zIndex: 2, position: "absolute", top: -10, left: 0 }}
+                                                onClick={async (e) => {
+                                                    e.preventDefault();
+                                                    setSelectedMatch(match);
+                                                    setMatches(matches.map((m) => {
+                                                        if (m.id == match.id) {
+                                                            m.loading = true;
+                                                        }
+                                                        return m;
+                                                    }));
+                                                    await playMatch(match);
+                                                    setMatches(matches.map((m) => {
+                                                        if (m.id == match.id) {
+                                                            m.loading = false;
+                                                        }
+                                                        return m;
+                                                    }));
+                                                }}>
+                                                {
+                                                    match.loading ? <Spinner animation="border" /> :
+                                                        ((match.state && match.state == "DONE") ? "Replay Match" : "Play Match")
+                                                }
+                                            </Button>
+                                        </>
+                                    );
+                                }
                             }
-                        }
-                        svgWrapper={({ children, ...props }) => {
-                            return (
-                                <Container style={{ width: "100%", height: "60vh", overflow: "scroll" }}>
-                                    {children}
-                                </Container>
-                            );
-                        }}
-                    /* return (
-                            <SVGViewer width={finalWidth} height={finalHeight} {...props}
-                                background="transparent"
-                                SVGBackground="transparent"
-                            >
-                                {children}
-                            </SVGViewer>
-                        );
-                    }} */
-                    />
-                }
+                        />
+                    }
+                </Container>
                 <Container className="mt-3">
                     <Form.Select aria-label="Default select example" onChange={(e) => {
                         setSelectedCharacter(allCharacters.find((character) => character.id == e.target.value));
@@ -382,8 +375,6 @@ export default function Brackets() {
                             Add Characters
                         </Button>
                         <Button variant="primary" onClick={() => {
-                            // randomize character order from allCharacters
-
                             let shuffled = allCharacters
                                 .map(value => ({ value, sort: Math.random() }))
                                 .sort((a, b) => a.sort - b.sort)
@@ -391,6 +382,11 @@ export default function Brackets() {
                             setCharacters(shuffled);
                         }}>
                             Randomize Characters
+                        </Button>
+                        <Button variant="danger" onClick={() => {
+                            setCharacters([]);
+                        }}>
+                            Clear Characters
                         </Button>
                         <Button variant="secondary" onClick={() => {
                             playAllMatches();

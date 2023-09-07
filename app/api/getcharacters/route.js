@@ -7,7 +7,7 @@ export async function GET(request) {
     try {
         // get all characters for the user ordered by last updated
         const result =
-            await sql`select * from Characters where username = ${username} order by id;`;
+            await sql`select * from Characters where username = ${username} order by id desc;`;
         const characters = result['rows'];
         return NextResponse.json(characters, { status: 200 });
     } catch (error) {

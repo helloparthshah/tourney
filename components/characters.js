@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Button, Collapse } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Collapse, Form } from "react-bootstrap";
 import EditCharacter from "../components/editcharacter";
 
 export default function Characters({ username }) {
@@ -62,11 +62,29 @@ export default function Characters({ username }) {
 
   return (
     <Container>
-      <h1 className="mb-3"><b>Your Characters</b></h1>
+      <h1 className="mb-3"><b>Your Characters</b>
+        <Form.Select aria-label="Sorting options" onChange={(e) => {
+          console.log(e.target.value);
+          const value = e.target.value;
+          let newCharacters = [...characters];
+          if (value === "name-asc") {
+            newCharacters = newCharacters.sort((a, b) => a.name.localeCompare(b.name));
+          } else if (value === "name-dsc") {
+            newCharacters = newCharacters.sort((a, b) => b.name.localeCompare(a.name));
+          } else if (value === "latest") {
+            newCharacters = newCharacters.sort((a, b) => b.id - a.id);
+          } else if (value === "oldest") {
+            newCharacters = newCharacters.sort((a, b) => a.id - b.id);
+          }
+          setCharacters(newCharacters);
+        }}>
+          <option value="latest">Latest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="name-asc">Name Ascending</option>
+          <option value="name-dsc">Name Descending</option>
+        </Form.Select>
+      </h1>
       <Row>
-        {characters.map((character, index) => (
-          <CharacterCard character={character} key={character.name} />
-        ))}
         <Col md={4} className="mb-3 d-flex flex-column justify-content-between align-items-center">
           <Card className="w-100 playing-card">
           </Card>
@@ -77,6 +95,9 @@ export default function Characters({ username }) {
             onCharacterUpdate={onCharacterUpdate}
           />
         </Col>
+        {characters.map((character, index) => (
+          <CharacterCard character={character} key={character.id} />
+        ))}
       </Row>
     </Container>
   );

@@ -31,7 +31,7 @@ intelligence: ${p2data.intelligence}
 luck: ${p2data.luck}
 willpower: ${p2data.willpower}`;
 
-    const promptString = `Give me a anime style battle between two characters. Use these descriptions to help you decide what happens in the battle. There should be only one victor. Try to make the battle as descriptive, gory and action-packed as possible.
+    const promptString = `Give me a funny anime style battle between two characters. Use these descriptions to help you decide what happens in the battle. There should be only one victor. Rely mostly on the descriptions to determine who wins.
 p1 name: 'Rishabh'
 description: Rishabh is a toxic guy whose personality is loving Atharav
 speed: 5
@@ -98,36 +98,6 @@ As the battle continued, it became evident that Rishabh's overconfidence had cos
 Rishabh fell to his knees, his strength drained, and his lifeblood pouring onto the arena floor. The crowd fell silent, stunned by the unexpected turn of events. With one last gasp, Rishabh collapsed, defeated.
 
 In a shocking twist of fate, the dim-witted CEO, Shaivya, emerged victorious in the brutal battle against the toxic warrior Rishabh. The arena erupted in a mix of astonishment and cheers, as the underdog, guided by sheer luck and determination, had triumphed over his formidable opponent.
-p1 name: 'BassHulk the DJ'
-description: His music is so bad that it makes everyone want to kill themselves
-speed: 1
-strength: 8
-charisma: 0
-intelligence: 2
-luck: 0
-willpower: 0
-p2: name: 'Kavesh Kavesh'
-description: He makes people feel uncomfortable in every room he enters. He is a certified pervert
-speed: 5
-strength: 5
-charisma: 5
-intelligence: 8
-luck: 3
-willpower: 3
-output: winner: Kavesh Kavesh
-description: BassHulk the DJ and Kavesh Kavesh faced off in the middle of the ring. The crowd was cheering wildly, eager to see who would come out on top.
-
-BassHulk started the fight by unleashing a powerful blast of sound waves from his speakers. The sound was so loud that it caused the crowd to cover their ears. Kavesh Kavesh was unaffected, however, and he simply smiled.
-
-Kavesh Kavesh then charged at BassHulk, swinging his arms wildly. BassHulk dodged the attacks easily, and he retaliated with a flurry of punches and kicks. Kavesh Kavesh was able to block most of the attacks, but he was still taking a beating.
-
-Suddenly, Kavesh Kavesh stopped fighting and began to dance. He danced so provocatively that the crowd went wild. BassHulk was so distracted by the dancing that he didn't see Kavesh Kavesh coming. Kavesh Kavesh grabbed BassHulk by the neck and slammed him into the ground.
-
-BassHulk struggled to get free, but Kavesh Kavesh was too strong. Kavesh Kavesh then began to grope BassHulk's body. BassHulk was so disgusted that he started to vomit.
-
-Kavesh Kavesh finally let go of BassHulk, and BassHulk collapsed to the ground. The crowd was cheering wildly for Kavesh Kavesh, who had just defeated his opponent in a humiliating fashion.
-
-BassHulk lay on the ground, too weak to move. He knew that he had been defeated, and he was filled with shame. He had lost the battle, but he had also lost his dignity.
 p1 ${p1Input}
 p2: ${p2Input}
 output:`;
@@ -180,10 +150,14 @@ output:`;
     if (result.error) {
         return NextResponse.json({ error: result.error.message }, { status: 500 });
     }
-    const winner = result.candidates[0].output.split("\n")[0].replace("winner: ", "").trim().replace(/'/g, "");
-    // desription is output from line 2 onwards
-    let description = result.candidates[0].output.split("\n")
-    description.shift();
-    description = description.join("\n").replace("description: ", "").trim();
-    return NextResponse.json({ winner, description }, { status: 200 });
+    try {
+        const winner = result.candidates[0].output.split("\n")[0].replace("winner: ", "").trim().replace(/'/g, "");
+        // desription is output from line 2 onwards
+        let description = result.candidates[0].output.split("\n")
+        description.shift();
+        description = description.join("\n").replace("description: ", "").trim();
+        return NextResponse.json({ winner, description }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ error: "Error parsing output" + result }, { status: 500 });
+    }
 }

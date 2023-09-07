@@ -66,6 +66,10 @@ export default function Brackets() {
         fetch(`/api/getcharacters?username=${username}`)
             .then(response => response.json())
             .then(data => {
+                // sort by name
+                data.sort((a, b) => {
+                    return a.name.localeCompare(b.name);
+                });
                 setAllCharacters(data);
                 setSelectedCharacter(data[0]);
             });
@@ -209,6 +213,7 @@ export default function Brackets() {
                         "error": error,
                     }
                 });
+            console.log(data);
         }
         if (data.error) {
             alert(data.error);
@@ -248,11 +253,25 @@ export default function Brackets() {
             participants[participantIndex].id = winnerCharacter.id;
             participants[participantIndex].name = winnerCharacter.name;
             participants[participantIndex].description = winnerCharacter.description;
-            console.log(JSON.stringify(participants));
             newMatches[nextMatchId].state = "SCHEDULED"
             newMatches[nextMatchId].participants = participants;
         }
         setMatches(newMatches);
+    }
+
+    const [allMatchesLoading, setAllMatchesLoading] = useState(false);
+
+    async function playAllMatches() {
+        setAllMatchesLoading(true);
+        const nRounds = Math.ceil(Math.log2(characters.length));
+        for (let i = 1; i <= nRounds; i++) {
+            let matchesInRound = matches.filter((match) => match.tournamentRoundText == i.toString());
+            await Promise.all(matchesInRound.map(async (match) => {
+                await playMatch(match);
+            }));
+            console.log("Round " + i + " done");
+        }
+        setAllMatchesLoading(false);
     }
 
     const [selectedMatch, setSelectedMatch] = useState(null);
@@ -308,14 +327,20 @@ export default function Brackets() {
                         }
                         svgWrapper={({ children, ...props }) => {
                             return (
-                                <SVGViewer width={finalWidth} height={finalHeight} {...props}
-                                    background="transparent"
-                                    SVGBackground="transparent"
-                                >
+                                <Container style={{ width: "100%", height: "60vh", overflow: "scroll" }}>
                                     {children}
-                                </SVGViewer>
+                                </Container>
                             );
                         }}
+                    /* return (
+                            <SVGViewer width={finalWidth} height={finalHeight} {...props}
+                                background="transparent"
+                                SVGBackground="transparent"
+                            >
+                                {children}
+                            </SVGViewer>
+                        );
+                    }} */
                     />
                 }
                 <Container>
@@ -349,6 +374,13 @@ export default function Brackets() {
                         setCharacters(shuffled);
                     }}>
                         Randomize Characters
+                    </Button>
+                    <Button variant="secondary" onClick={() => {
+                        playAllMatches();
+                    }}>
+                        {allMatchesLoading ?
+                            <Spinner animation="border" /> :
+                            "Play All Matches"}
                     </Button>
                 </Container>
                 <Container>

@@ -6,9 +6,12 @@ import { Container } from "react-bootstrap"
 export default function Home() {
   return (
     <Container>
-      <h1>Generative Language</h1>
-      <p>Generative Language is a web app that uses GPT-3 to generate characters for your tabletop RPGs.</p>
-      <p>It is currently in development.</p>
+      <center className="mt-5 mb-5">
+        <h1>HashiHunt Tourney Battles</h1>
+        <p>HashiHunt Tourney Battles is a game where you can pit your characters against each other in a battle of wits and strength.</p>
+        <p>It uses Natural Language Processing to create a story based on the characters' descriptions and stats.</p>
+        <p>It is currently in development.</p>
+      </center>
       <Characters username={process.env.TEST_USER} />
     </Container>
   )

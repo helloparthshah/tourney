@@ -1,8 +1,5 @@
 "use client"
 
-import Sidebar from '@/components/sidebar';
-// import { SingleEliminationBracket, Match, MATCH_STATES, SVGViewer } from '@g-loot/react-tournament-brackets';
-import { useWindowSize } from '@uidotdev/usehooks';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { Button, Container, Form, OverlayTrigger, Popover, Spinner } from 'react-bootstrap';
@@ -52,9 +49,6 @@ const createTheme = dynamic(
 );
 
 export default function Brackets() {
-    const size = useWindowSize();
-    const finalWidth = Math.max(size.width - 200, 500);
-    const finalHeight = Math.max(size.height - 100, 500);
     const [username, setUsername] = useState(process.env.TEST_USER);
     const [allCharacters, setAllCharacters] = useState([]);
     const [selectedCharacter, setSelectedCharacter] = useState(null);
@@ -183,6 +177,24 @@ export default function Brackets() {
     }, [characters]);
 
     async function playMatch(match) {
+        /* await fetch('/api/generate-winner', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                p1: characters.find((character) => character.id == match.participants[0].id),
+                p2: characters.find((character) => character.id == match.participants[1].id),
+            }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                console.log(data.winner.name);
+            }).catch((error) => {
+                console.error('Error:', error);
+            });
+        return false; */
         let data = {};
         if (match.state && match.state == "WALK_OVER") {
             data = {

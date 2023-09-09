@@ -177,24 +177,6 @@ export default function Brackets() {
     }, [characters]);
 
     async function playMatch(match) {
-        /* await fetch('/api/generate-winner', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                p1: characters.find((character) => character.id == match.participants[0].id),
-                p2: characters.find((character) => character.id == match.participants[1].id),
-            }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                console.log(data.winner.name);
-            }).catch((error) => {
-                console.error('Error:', error);
-            });
-        return false; */
         let data = {};
         if (match.state && match.state == "WALK_OVER") {
             data = {
@@ -207,6 +189,30 @@ export default function Brackets() {
                 alert("Please play all matches before playing this match");
                 return false;
             }
+            let win = await fetch('/api/generate-winner', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    p1: characters.find((character) => character.id == match.participants[0].id),
+                    p2: characters.find((character) => character.id == match.participants[1].id),
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    console.log(data.winner.name);
+                    return data.winner.name;
+                }).catch((error) => {
+                    console.error('Error:', error);
+                    return {
+                        "error": error,
+                    }
+                });
+            if (win.error) {
+                return false;
+            }
             data = await fetch('/api/battle', {
                 method: 'POST',
                 headers: {
@@ -216,6 +222,7 @@ export default function Brackets() {
                     username: username,
                     p1: match.participants[0].name,
                     p2: match.participants[1].name,
+                    winner: win,
                 }),
             })
                 .then(response => response.json())
@@ -261,6 +268,7 @@ export default function Brackets() {
         }
         // set match description
         newMatches[newMatchId].description = description;
+        newMatches[newMatchId].winner = winnerCharacter.name;
         // set next match
         if (newMatches[newMatchId].nextMatchId != null) {
             let nextMatchId = newMatches.findIndex((m) => m.id == newMatches[newMatchId].nextMatchId);
@@ -278,13 +286,15 @@ export default function Brackets() {
 
     const [allMatchesLoading, setAllMatchesLoading] = useState(false);
 
+    const N_MAX_RETRIES = 3;
+
     async function playAllMatches() {
         setAllMatchesLoading(true);
         const nRounds = Math.ceil(Math.log2(characters.length));
         for (let i = 1; i <= nRounds; i++) {
             let matchesInRound = matches.filter((match) => match.tournamentRoundText == i.toString());
             await Promise.all(matchesInRound.map(async (match) => {
-                setSelectedMatch(match);
+                // setSelectedMatch(match);
                 setMatches(matches.map((m) => {
                     if (m.id == match.id) {
                         m.loading = true;
@@ -292,7 +302,9 @@ export default function Brackets() {
                     return m;
                 }));
                 let status = false;
-                while (!status) {
+                let nRetries = 0;
+                while (!status && nRetries < N_MAX_RETRIES) {
+                    nRetries++;
                     status = await playMatch(match);
                 }
                 setMatches(matches.map((m) => {
@@ -397,10 +409,12 @@ export default function Brackets() {
                         </Button>
                         <Button variant="danger" onClick={() => {
                             setCharacters([]);
+                            setSelectedMatch(null);
                         }}>
                             Clear Characters
                         </Button>
                         <Button variant="secondary" onClick={() => {
+                            setSelectedMatch(null);
                             playAllMatches();
                         }}>
                             {allMatchesLoading ?
@@ -414,8 +428,11 @@ export default function Brackets() {
                     {selectedMatch &&
                         <div>
                             <h3>{selectedMatch.name}</h3>
+                            <h5>{"Winner: " + selectedMatch.winner ?? ""}</h5>
                             <h5>{selectedMatch.participants[0].name ?? ""} vs {selectedMatch.participants[1]?.name ?? ""}</h5>
-                            <h5>{selectedMatch.description ?? ""}</h5>
+                            <p style={{ whiteSpace: "pre-line" }}>
+                                {selectedMatch.description ?? ""}
+                            </p>
                         </div>
                     }
                 </Container>

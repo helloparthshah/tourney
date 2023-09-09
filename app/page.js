@@ -21,9 +21,9 @@ export default function Home() {
           <h2>Instructions</h2>
           <p>Sign in with your Google account to create characters.</p>
           <p>Once you have created characters, you can pit them against each other in a battle in the Tourney tab.</p>
-          <p>Once a battle is complete, you can view the fight by clicking on "Match Details".</p>
-          <p>You can replay battles by clicking on "Play Match" after the results are displayed.</p>
-          <p>You can autoplay matches through the "Play All Matches" button</p>
+          <p>Once a battle is complete, you can view the fight by clicking on &quot;Match Details&quot;.</p>
+          <p>You can replay battles by clicking on &quot;Play Match&quot; after the results are displayed.</p>
+          <p>You can autoplay matches through the &quot;Play All Matches&quot; button</p>
           <p>Have fun!</p>
         </div>
       </center>

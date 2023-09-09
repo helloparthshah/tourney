@@ -114,7 +114,7 @@ export default function Topbar() {
         <Container fluid>
           <Navbar.Brand href="/" as={Link}>
             <h1>
-              #tourney
+              Storyline Showdowns
             </h1>
           </Navbar.Brand>
           <Navbar.Toggle
@@ -130,7 +130,7 @@ export default function Topbar() {
           >
             <Offcanvas.Header closeButton>
               <Offcanvas.Title id={`offcanvasNavbarLabel-expand-sm`}>
-                TEST
+                Storyline Showdowns
               </Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>

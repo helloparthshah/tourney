@@ -260,7 +260,7 @@ export default function Brackets() {
 
         let winner = data.winner;
 
-        let winnerCharacter = characters.find((character) => character.name.toLowerCase().includes(winner.toLowerCase()));
+        let winnerCharacter = characters.find((character) => character.name == winner);
         // make winner name resultText and isWinner true
         newMatches[newMatchId].participants.forEach((participant) => {
             if (participant.name == winnerCharacter.name) {

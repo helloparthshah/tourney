@@ -2,8 +2,10 @@
 
 import Characters from "@/components/characters"
 import { Container } from "react-bootstrap"
+import { useSession, signIn, signOut } from "next-auth/react"
 
 export default function Home() {
+  const { data: session } = useSession()
   return (
     <Container>
       <center className="mt-5 mb-5">
@@ -12,7 +14,13 @@ export default function Home() {
         <p>It uses Natural Language Processing to create a story based on the characters&apos; descriptions and stats.</p>
         <p>It is currently in development.</p>
       </center>
-      <Characters username={process.env.TEST_USER} />
+      {session ? (
+        <Characters username={process.env.TEST_USER} />
+      ) : (
+        <center>
+          <button className="btn btn-primary" onClick={() => signIn()}>Sign In</button>
+        </center>
+      )}
     </Container>
   )
 }

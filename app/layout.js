@@ -12,13 +12,13 @@ export default function RootLayout({ children, session }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Topbar />
-        <div style={{ minHeight: '80vh' }}>
-          <SessionProvider session={session}>
+        <SessionProvider session={session}>
+          <Topbar />
+          <div style={{ minHeight: '80vh' }}>
             {children}
-          </SessionProvider>
-        </div>
-        <Footer />
+          </div>
+          <Footer />
+        </SessionProvider>
       </body>
     </html>
   )

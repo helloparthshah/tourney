@@ -1,8 +1,10 @@
 'use client'
 
-import { Container, Navbar, Nav, Offcanvas, ButtonGroup, ToggleButton } from "react-bootstrap";
+import { Container, Navbar, Nav, Offcanvas, ButtonGroup, ToggleButton, NavDropdown, Button } from "react-bootstrap";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSession, signIn, signOut } from "next-auth/react"
+import Image from "next/image";
 
 export default function Topbar() {
   const [show, setShow] = useState(false);
@@ -10,6 +12,9 @@ export default function Topbar() {
   const pageYOffsetTrigger = 150;
   const [isLightMode, setIsLightMode] = useState(false);
   const [theme, setTheme] = useState('auto');
+  const { data: session } = useSession()
+
+  console.log(session);
 
   function toggleMode(isDarkMode) {
     if (isDarkMode) {
@@ -171,12 +176,32 @@ export default function Topbar() {
                           toggleMode(e.currentTarget.value === 'dark');
                         }
                       }}
+                      className="d-flex justify-content-center align-items-center"
                     >
                       {radio.name}
                     </ToggleButton>
                   ))
                 }
               </ButtonGroup>
+              <Nav className="d-flex justify-content-center align-items-center ps-3 pe-3">
+                {session ? (
+                  <NavDropdown
+                    id="nav-dropdown-dark-example"
+                    title={
+                      <Image src={session.user.image} width="30" height="30" style={{ borderRadius: "50%" }} />
+                    }
+                    expand="sm"
+                    align="end"
+                  >
+                    <NavDropdown.Item href="/api/auth/signout" onClick={() => signOut()}>Sign Out</NavDropdown.Item>
+                  </NavDropdown>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    onClick={() => signIn()}>Sign In</Button>
+                )}
+              </Nav>
+
             </Offcanvas.Body>
           </Navbar.Offcanvas>
         </Container>

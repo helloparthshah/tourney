@@ -1,5 +1,6 @@
 "use client"
 
+import { useSession, signIn, signOut } from "next-auth/react"
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { Button, Container, Form, OverlayTrigger, Popover, Spinner } from 'react-bootstrap';
@@ -49,15 +50,17 @@ const createTheme = dynamic(
 );
 
 export default function Brackets() {
-    const [username, setUsername] = useState(process.env.TEST_USER);
+    const { data: session } = useSession()
     const [allCharacters, setAllCharacters] = useState([]);
     const [selectedCharacter, setSelectedCharacter] = useState(null);
     const [characters, setCharacters] = useState([]);
-
+    const [allMatchesLoading, setAllMatchesLoading] = useState(false);
     const [matches, setMatches] = useState([]);
+    const [selectedMatch, setSelectedMatch] = useState(null);
 
     useEffect(() => {
-        fetch(`/api/getcharacters?username=${username}`)
+        if (!session) return;
+        fetch(`/api/getcharacters?username=${session.user.email}`)
             .then(response => response.json())
             .then(data => {
                 // sort by name
@@ -67,9 +70,10 @@ export default function Brackets() {
                 setAllCharacters(data);
                 setSelectedCharacter(data[0]);
             });
-    }, [username]);
+    }, [session]);
 
     useEffect(() => {
+        if (!session) return;
         if (characters.length < 1) {
             setMatches([]);
             return;
@@ -176,6 +180,16 @@ export default function Brackets() {
         setMatches(newMatches);
     }, [characters]);
 
+    if (!session) {
+        return (
+            <Container>
+                <center>
+                    <button className="btn btn-primary" onClick={() => signIn()}>Sign In</button>
+                </center>
+            </Container>
+        );
+    }
+
     async function playMatch(match) {
         let data = {};
         if (match.state && match.state == "WALK_OVER") {
@@ -184,7 +198,7 @@ export default function Brackets() {
                 description: "Walkover",
             };
         } else {
-            if (!username) return false;
+            if (!session) return false;
             if (!match.participants[0].id || !match.participants[1].id) {
                 alert("Please play all matches before playing this match");
                 return false;
@@ -219,7 +233,7 @@ export default function Brackets() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    username: username,
+                    username: session.user.email,
                     p1: match.participants[0].name,
                     p2: match.participants[1].name,
                     winner: win,
@@ -270,7 +284,7 @@ export default function Brackets() {
         newMatches[newMatchId].description = description;
         newMatches[newMatchId].winner = winnerCharacter.name;
         // set next match
-        if (newMatches[newMatchId].nextMatchId != null) {
+        if (newMatches[newMatchId].nextMatchId) {
             let nextMatchId = newMatches.findIndex((m) => m.id == newMatches[newMatchId].nextMatchId);
             let participants = JSON.parse(JSON.stringify(newMatches[nextMatchId].participants));
             let participantIndex = newMatches[newMatchId].id % 2;
@@ -284,7 +298,6 @@ export default function Brackets() {
         return true;
     }
 
-    const [allMatchesLoading, setAllMatchesLoading] = useState(false);
 
     const N_MAX_RETRIES = 3;
 
@@ -319,7 +332,6 @@ export default function Brackets() {
         setAllMatchesLoading(false);
     }
 
-    const [selectedMatch, setSelectedMatch] = useState(null);
 
     return (
         <>

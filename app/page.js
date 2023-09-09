@@ -6,6 +6,7 @@ import { useSession, signIn, signOut } from "next-auth/react"
 
 export default function Home() {
   const { data: session } = useSession()
+
   return (
     <Container>
       <center className="mt-5 mb-5">
@@ -15,11 +16,9 @@ export default function Home() {
         <p>It is currently in development.</p>
       </center>
       {session ? (
-        <Characters username={process.env.TEST_USER} />
+        <Characters username={session.user.email} />
       ) : (
-        <center>
-          <button className="btn btn-primary" onClick={() => signIn()}>Sign In</button>
-        </center>
+        null
       )}
     </Container>
   )

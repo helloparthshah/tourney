@@ -14,8 +14,6 @@ export default function Topbar() {
   const [theme, setTheme] = useState('auto');
   const { data: session } = useSession()
 
-  console.log(session);
-
   function toggleMode(isDarkMode) {
     if (isDarkMode) {
       setIsLightMode(false);
@@ -29,7 +27,6 @@ export default function Topbar() {
   useEffect(() => {
     // check local storage for preference
     const theme = localStorage.getItem('theme');
-    console.log(theme);
     if (theme) {
       setTheme(theme);
     } else {

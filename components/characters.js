@@ -8,13 +8,11 @@ export default function Characters({ username }) {
   const [characters, setCharacters] = useState([]);
 
   useEffect(() => {
-    fetch(`/api/getcharacters?username=${username}`)
-      .then(response => response.json())
-      .then(data => setCharacters(data));
+    onCharacterUpdate();
   }, [username]);
 
   function onCharacterUpdate() {
-    fetch(`/api/getcharacters?username=${username}`)
+    fetch(`/api/getcharacters`)
       .then(response => response.json())
       .then(data => setCharacters(data));
   }
@@ -64,7 +62,6 @@ export default function Characters({ username }) {
     <Container>
       <h1 className="mb-3"><b>Your Characters</b>
         <Form.Select aria-label="Sorting options" onChange={(e) => {
-          console.log(e.target.value);
           const value = e.target.value;
           let newCharacters = [...characters];
           if (value === "name-asc") {

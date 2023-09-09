@@ -1,5 +1,7 @@
 import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../auth/[...nextauth]/route"
 
 async function getCharacter(username, name) {
     const characters = await sql`SELECT * FROM Characters WHERE username = ${username} AND name = ${name};`;
@@ -7,8 +9,11 @@ async function getCharacter(username, name) {
 }
 
 export async function POST(request) {
-    const { username,
-        p1,
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
+    const username = session.user.email;
+
+    const { p1,
         p2,
         winner } = await request.json();
     let p1data = await getCharacter(username, p1);

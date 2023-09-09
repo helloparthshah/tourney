@@ -20,7 +20,6 @@ export default function EditCharacter({ character, add, onCharacterUpdate }) {
         e.preventDefault();
         setLoading(true);
         let newCharacter = {
-            username: character.username,
             id: character.id
         };
         fetch('/api/delete-character', {
@@ -40,7 +39,6 @@ export default function EditCharacter({ character, add, onCharacterUpdate }) {
         setLoading(true);
         if (add) {
             let newCharacter = {
-                username: character.username,
                 name: name,
                 description: description,
                 image: image,
@@ -54,7 +52,6 @@ export default function EditCharacter({ character, add, onCharacterUpdate }) {
             })
         } else {
             let newCharacter = {
-                username: character.username,
                 name: name,
                 description: description,
                 image: image,
@@ -116,7 +113,7 @@ export default function EditCharacter({ character, add, onCharacterUpdate }) {
             </Modal>
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Edit Character</Modal.Title>
+                    <Modal.Title>{add ? "Add" : "Edit"} Character</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form onSubmit={handleSubmit}>

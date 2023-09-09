@@ -60,7 +60,7 @@ export default function Brackets() {
 
     useEffect(() => {
         if (!session) return;
-        fetch(`/api/getcharacters?username=${session.user.email}`)
+        fetch(`/api/getcharacters`)
             .then(response => response.json())
             .then(data => {
                 // sort by name
@@ -233,7 +233,6 @@ export default function Brackets() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    username: session.user.email,
                     p1: match.participants[0].name,
                     p2: match.participants[1].name,
                     winner: win,

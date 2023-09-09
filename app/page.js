@@ -16,7 +16,7 @@ export default function Home() {
         <p>It is currently in development.</p>
       </center>
       {session ? (
-        <Characters username={session.user.email} />
+        <Characters />
       ) : (
         null
       )}

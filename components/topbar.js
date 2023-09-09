@@ -138,9 +138,13 @@ export default function Topbar() {
                 <Nav.Link href="/" as={Link} className="main-text-regular" onClick={() => setShow(false)}>
                   Home
                 </Nav.Link>
-                <Nav.Link href="/tourney" as={Link} className="main-text-regular" onClick={() => setShow(false)}>
-                  Tourney
-                </Nav.Link>
+                {session ? (
+                  <Nav.Link href="/tourney" as={Link} className="main-text-regular" onClick={() => setShow(false)}>
+                    Tourney
+                  </Nav.Link>
+                ) : (
+                  null
+                )}
               </Nav>
               <ButtonGroup>
                 {

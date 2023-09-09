@@ -1,7 +1,7 @@
 "use client"
 
 import Characters from "@/components/characters"
-import { Container } from "react-bootstrap"
+import { Button, Container } from "react-bootstrap"
 import { useSession, signIn, signOut } from "next-auth/react"
 
 export default function Home() {
@@ -25,6 +25,15 @@ export default function Home() {
           <p>You can replay battles by clicking on &quot;Play Match&quot; after the results are displayed.</p>
           <p>You can autoplay matches through the &quot;Play All Matches&quot; button</p>
           <p>Have fun!</p>
+          <div className="mt-3 d-flex flex-column justify-content-center align-items-center gap-3">
+            <Button variant="secondary" onClick={() => signIn()}>Sign In</Button>
+            <Button variant="secondary" href="/tourney">
+              Tourney
+            </Button>
+            <Button variant="danger" href="https://github.com/helloparthshah/tourney/issues/new">
+              Report a Bug
+            </Button>
+          </div>
         </div>
       </center>
       {session ? (
